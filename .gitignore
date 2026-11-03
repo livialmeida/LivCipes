@@ -13,3 +13,12 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Logs and local databases
+*.log
+*.proto
+*shared_proto_db*
+.dart_tool/
+build/
+
+lib/firebase_options.dart
