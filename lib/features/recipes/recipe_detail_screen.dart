@@ -81,6 +81,53 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Verify access authorization against recipe restriction rules
+    final isAuthorized = !widget.recipe.isRestricted ||
+      widget.accessToken.isAdmin ||
+      widget.accessToken.grantedRecipeIds.contains(widget.recipe.id);
+
+    // 2. Defensive block: intercept rendering if unauthorized
+    if (!isAuthorized) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Acesso Restrito'),
+        ),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.lock_outline_rounded,
+                  size: 64,
+                  color: Colors.grey.shade400,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Receita Restrita',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Sua chave de acesso não possui permissão para visualizar esta receita.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
