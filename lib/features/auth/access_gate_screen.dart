@@ -26,9 +26,15 @@ class _AccessGateScreenState extends State<AccessGateScreen> {
   bool _isLoading = false;
   String? _errorMessage;
 
+  bool _hasReturnRef = false;
+
   @override
   void initState() {
     super.initState();
+    // indentifies if the yser navigates from manachef
+    final uri = Uri.base;
+    _targetRecipeId = uri.queryParameters['recipe'];
+    _hasReturnRef = uri.queryParameters['ref'] == 'app';
     _bootstrapSession();
   }
 
@@ -76,7 +82,10 @@ class _AccessGateScreenState extends State<AccessGateScreen> {
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => RecipeListScreen(accessToken: token),
+            builder: (context) => RecipeListScreen(
+              accessToken: token,
+              hasReturnRef: _hasReturnRef,
+            ),
           ),
         );
       }

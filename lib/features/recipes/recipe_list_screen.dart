@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:web/web.dart' as web;
 import '../../core/app_theme.dart';
 import 'recipe_model.dart';
 import 'recipe_service.dart';
@@ -12,10 +14,12 @@ import '../auth/access_gate_screen.dart';
 
 class RecipeListScreen extends StatefulWidget {
   final AccessToken accessToken;
+  final bool hasReturnRef;
 
   const RecipeListScreen({
     super.key,
     required this.accessToken,
+    this.hasReturnRef = false,
   });
 
   @override
@@ -386,6 +390,24 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     );
   }
 
+  // Retrieves optional return target URL injected at compile time
+  static const String _returnHost = String.fromEnvironment('RETURN_URL');
+
+  void _handleReturnToOrigin() {
+    if (kIsWeb) {
+      try {
+       if (_returnHost.isNotEmpty) {
+         web.window.location.href = _returnHost;
+       } else {
+         // Standard browser history pop: returns to caller tab without hardcoding origins
+         web.window.history.back();
+       }
+      } catch (_) {
+        // fallback
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -394,6 +416,13 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           'LivCipes',
           style: TextStyle(fontWeight: FontWeight.w600),
         ),
+          leading: widget.hasReturnRef
+              ? IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            tooltip: 'Voltar',
+            onPressed: _handleReturnToOrigin,
+          )
+              : null,
         actions: [
           if (widget.accessToken.isAdmin)
             IconButton(
