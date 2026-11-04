@@ -40,19 +40,20 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     return amount.toString();
   }
 
-  Future<void> _deleteRecipe() async {
+  // Confirms and deletes the recipe document from Firestore
+  Future<void> _confirmAndDeleteRecipe() async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (ctx) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Excluir Receita?'),
-        content: Text('Tem certeza que deseja apagar "${_currentRecipe.title}"?'),
+        content: Text('Tem certeza que deseja excluir ${_currentRecipe.title}?'),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
+            onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            onPressed: () => Navigator.pop(ctx, true),
+            onPressed: () => Navigator.pop(dialogContext, true),
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
             child: const Text('Excluir', style: TextStyle(color: Colors.white)),
           ),
@@ -62,20 +63,9 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
 
     if (confirmed == true && mounted) {
       await _recipeService.deleteRecipe(_currentRecipe.id);
-      if (mounted) Navigator.pop(context);
-    }
-  }
-
-  Future<void> _editRecipe() async {
-    final updated = await Navigator.push<Recipe>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => RecipeFormScreen(recipeToEdit: _currentRecipe),
-      ),
-    );
-
-    if (updated != null && mounted) {
-      setState(() => _currentRecipe = updated);
+      if (mounted) {
+        Navigator.pop(context);
+      }
     }
   }
 
@@ -172,15 +162,30 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                }
               },
             ),
+
             IconButton(
               icon: const Icon(Icons.edit_outlined),
-              tooltip: 'Editar',
-              onPressed: _editRecipe,
+              tooltip: 'Editar receita',
+              onPressed: () async {
+                final navigator = Navigator.of(context);
+                final updated = await navigator.push<Recipe>(
+                  MaterialPageRoute(
+                    builder: (context) => RecipeFormScreen(
+                      recipeToEdit: _currentRecipe,
+                    ),
+                  ),
+                );
+
+                if (updated != null && mounted) {
+                  setState(() => _currentRecipe = updated);
+                }
+              },
             ),
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              tooltip: 'Excluir',
-              onPressed: _deleteRecipe,
+              icon: const Icon(Icons.delete_outline_rounded),
+              tooltip: 'Excluir receita',
+              color: Colors.redAccent,
+              onPressed: _confirmAndDeleteRecipe,
             ),
           ],
         ],
