@@ -30,6 +30,19 @@ class RecipeService {
     await _recipesCollection.add(recipe);
   }
 
+  // Fetches a single recipe by its document id
+  Future<Recipe?> getRecipeById(String recipeId) async {
+    try {
+      final docSnap = await _firestore.collection('recipes').doc(recipeId).get();
+      if (!docSnap.exists || docSnap.data() == null) return null;
+
+      final data = docSnap.data() as Map<String, dynamic>;
+      return Recipe.fromMap(data, docSnap.id);
+    } catch (_) {
+      return null;
+    }
+  }
+
   // Update existing recipe document
   Future<void> updateRecipe(Recipe recipe) async {
     if (recipe.id.isEmpty) return;

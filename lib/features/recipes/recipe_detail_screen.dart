@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/app_theme.dart';
 import '../auth/access_token_model.dart';
 import 'recipe_form_screen.dart';
@@ -21,6 +22,8 @@ class RecipeDetailScreen extends StatefulWidget {
 }
 
 class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
+  bool _copiedToClipboard = false;
+
   late Recipe _currentRecipe;
   final RecipeService _recipeService = RecipeService();
 
@@ -86,6 +89,42 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         ),
         actions: [
           if (widget.accessToken.isAdmin) ...[
+            IconButton(
+              icon: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 200),
+                child: Icon(
+                  _copiedToClipboard ? Icons.check_rounded : Icons.share_outlined,
+                  key: ValueKey<bool>(_copiedToClipboard),
+                  color: _copiedToClipboard ? AppColors.primary : null,
+                ),
+              ),
+              tooltip: _copiedToClipboard ? 'Copiado' : 'Copiar link da receita',
+              onPressed: () async {
+                // 1. Build canonical share url using base uri and recipe id query param
+               final shareUrl = Uri.base.replace(
+                 queryParameters: {
+                   'recipe': widget.recipe.id,
+                 },
+               ).toString();
+
+                // 2. Persis formatted link to system clipboard
+                await Clipboard.setData(ClipboardData(text: shareUrl));
+
+                // 3. Guard against asynchronous gap if widget unmounts
+                if (!mounted) return;
+
+                // 4. Switch visual indicator to confirm checkmark
+                setState(() => _copiedToClipboard = true);
+
+               // 5. Retain confirmation state for 2 secondas
+               await Future.delayed(const Duration(seconds: 2));
+
+               // 6. Reset back to original share icon
+               if (mounted) {
+                 setState(() => _copiedToClipboard = false);
+               }
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.edit_outlined),
               tooltip: 'Editar',

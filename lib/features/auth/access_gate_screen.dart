@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:web/web.dart' as web;
 import '../../core/app_theme.dart';
 import '../recipes/recipe_list_screen.dart';
+import '../recipes/recipe_model.dart';
+import '../recipes/recipe_service.dart';
+import '../recipes/recipe_detail_screen.dart';
 import 'access_token_model.dart';
 import 'auth_service.dart';
 
@@ -13,8 +18,10 @@ class AccessGateScreen extends StatefulWidget {
 
 class _AccessGateScreenState extends State<AccessGateScreen> {
   final AuthService _authService = AuthService();
+  final RecipeService _recipeService = RecipeService();
   final TextEditingController _tokenController = TextEditingController();
 
+  String? _targetRecipeId;
   bool _isCheckingSession = true;
   bool _isLoading = false;
   String? _errorMessage;
@@ -31,19 +38,106 @@ class _AccessGateScreenState extends State<AccessGateScreen> {
     super.dispose();
   }
 
+  // Sanitizes the browser address bar by stripping query parameters without a page reload
+  void _cleanAddressBar() {
+    if (kIsWeb) {
+      try {
+        web.window.history.replaceState(null, '', Uri.base.path);
+      } catch (_) {
+        // Graceful fallback if history API is restricted in sandbox
+      }
+    }
+  }
+
   // Check for auto-login session
   Future<void> _bootstrapSession() async {
+  // 1. Ensure target recipe ID is captured from the window location
+    _targetRecipeId ??= Uri.base.queryParameters['recipe'];
+
+    final token = await _authService.checkCurrentSession();
+    if (!mounted) return;
+
+    if (token != null) {
+      // Directs to the unified routing method instead of push list screen
+      await _handlePostAuthNavigation(token);
+    } else {
+      setState(() {
+        _isCheckingSession = false;
+      });
+    }
+  }
+
+  // Unified post-authentication routing
+  Future<void> _handlePostAuthNavigation(AccessToken token) async {
+    final recipeId = _targetRecipeId ?? Uri.base.queryParameters['recipe'];
+
+    if (recipeId == null || recipeId.isEmpty) {
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeListScreen(accessToken: token),
+          ),
+        );
+      }
+      return;
+    }
+
     try {
-      final token = await _authService.checkCurrentSession();
-      if (token != null && mounted) {
-        _navigateToRecipes(token);
+      final Recipe? recipe = await _recipeService.getRecipeById(recipeId);
+
+      if (!mounted) return;
+
+      if (recipe == null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeListScreen(accessToken: token),
+          ),
+        );
         return;
       }
+
+      final hasPermission = !recipe.isRestricted ||
+          token.isAdmin ||
+          token.grantedRecipeIds.contains(recipe.id);
+
+      if (!hasPermission) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeListScreen(accessToken: token),
+          ),
+        );
+        return;
+      }
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RecipeListScreen(accessToken: token),
+        ),
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => RecipeDetailScreen(
+            recipe: recipe,
+            accessToken: token,
+          ),
+        ),
+      );
+
+      // Clean query parameter from browser address bar immediately after routing
+      _cleanAddressBar();
     } catch (_) {
-      // Ignored: screen falls back to manual token input
-    } finally {
       if (mounted) {
-        setState(() => _isCheckingSession = false);
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RecipeListScreen(accessToken: token),
+          ),
+        );
       }
     }
   }

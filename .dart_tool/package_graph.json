@@ -13,8 +13,11 @@
         "firebase_core",
         "flutter",
         "flutter_svg",
+        "flutter_web_plugins",
         "shared_preferences",
-        "uuid"
+        "url_strategy",
+        "uuid",
+        "web"
       ],
       "devDependencies": [
         "flutter_lints",
@@ -44,6 +47,18 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "web",
+      "version": "1.1.1",
+      "dependencies": []
+    },
+    {
+      "name": "url_strategy",
+      "version": "0.3.0",
+      "dependencies": [
+        "flutter_web_plugins"
       ]
     },
     {
@@ -120,6 +135,13 @@
       "name": "cupertino_icons",
       "version": "1.0.9",
       "dependencies": []
+    },
+    {
+      "name": "flutter_web_plugins",
+      "version": "0.0.0",
+      "dependencies": [
+        "flutter"
+      ]
     },
     {
       "name": "flutter",
@@ -309,18 +331,6 @@
         "ffi",
         "ffi_leak_tracker",
         "meta"
-      ]
-    },
-    {
-      "name": "web",
-      "version": "1.1.1",
-      "dependencies": []
-    },
-    {
-      "name": "flutter_web_plugins",
-      "version": "0.0.0",
-      "dependencies": [
-        "flutter"
       ]
     },
     {

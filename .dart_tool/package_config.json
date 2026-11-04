@@ -356,6 +356,12 @@
       "languageVersion": "3.5"
     },
     {
+      "name": "url_strategy",
+      "rootUri": "file:///C:/Users/livia/AppData/Local/Pub/Cache/hosted/pub.dev/url_strategy-0.3.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.15"
+    },
+    {
       "name": "uuid",
       "rootUri": "file:///C:/Users/livia/AppData/Local/Pub/Cache/hosted/pub.dev/uuid-4.6.0",
       "packageUri": "lib/",
