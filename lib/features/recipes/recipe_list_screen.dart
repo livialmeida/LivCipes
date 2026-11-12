@@ -736,6 +736,26 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              if (recipe.isApproved) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE8F3EE),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: const Color(0xFFB7D9C9)),
+                  ),
+                  child: const Text(
+                    '★ RECEITA TESTADA E APROVADA',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.6,
+                      color: Color(0xFF2E6F56),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [

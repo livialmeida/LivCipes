@@ -49,6 +49,7 @@ class Recipe {
   final List<Ingredient> ingredients;
   final List<RecipeStepGroup> stepGroups;
   final bool isRestricted;
+  final bool isApproved;
   final DateTime createdAt;
 
   const Recipe({
@@ -64,6 +65,7 @@ class Recipe {
     required this.ingredients,
     required this.stepGroups,
     this.isRestricted = false,
+    this.isApproved = false,
     required this.createdAt,
   });
 
@@ -104,6 +106,7 @@ class Recipe {
           .toList(),
       stepGroups: parseStepGroups(),
       isRestricted: data['isRestricted'] as bool? ?? false,
+      isApproved: data['isApproved'] as bool? ?? false,
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -121,6 +124,7 @@ class Recipe {
       'ingredients': ingredients.map((i) => i.toMap()).toList(),
       'stepGroups': stepGroups.map((g) => g.toMap()).toList(),
       'isRestricted': isRestricted,
+      'isApproved': isApproved,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }
