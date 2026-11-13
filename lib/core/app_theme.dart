@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 abstract class AppColors {
   // Base surfaces (light and clean)
@@ -30,6 +31,8 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData get light {
+    final baseTextTheme = GoogleFonts.getTextTheme('Momo Trust Sans');
+
     return ThemeData(
       useMaterial3: true,
       brightness: Brightness.light,
@@ -42,12 +45,70 @@ class AppTheme {
         onSurface: AppColors.textPrimary,
         onPrimary: Colors.white,
       ),
-      appBarTheme: const AppBarTheme(
+      textTheme: baseTextTheme.copyWith(
+        // Brand / Logo signature highlights (Momo Signature)
+        displayLarge: GoogleFonts.getFont(
+          'Momo Signature',
+          fontSize: 36,
+          color: AppColors.primary,
+        ),
+        displayMedium: GoogleFonts.getFont(
+          'Momo Signature',
+          fontSize: 28,
+          color: AppColors.primary,
+        ),
+        // Recipe titles & section headers (Momo Trust Display)
+        headlineLarge: GoogleFonts.getFont(
+          'Momo Trust Display',
+          fontSize: 24,
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+        headlineMedium: GoogleFonts.getFont(
+          'Momo Trust Display',
+          fontSize: 20,
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+        ),
+        headlineSmall: GoogleFonts.getFont(
+          'Momo Trust Display',
+          fontSize: 18,
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        titleLarge: GoogleFonts.getFont(
+          'Momo Trust Display',
+          fontSize: 16,
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        // Body, ingredients & UI (Momo Trust Sans)
+        titleMedium: baseTextTheme.titleMedium?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
+        bodyLarge: baseTextTheme.bodyLarge?.copyWith(
+          color: AppColors.textPrimary,
+        ),
+        bodyMedium: baseTextTheme.bodyMedium?.copyWith(
+          color: AppColors.textSecondary,
+        ),
+        labelLarge: baseTextTheme.labelLarge?.copyWith(
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      appBarTheme: AppBarTheme(
         backgroundColor: AppColors.surface,
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         centerTitle: false,
-        shape: Border(
+        titleTextStyle: GoogleFonts.getFont(
+          'Momo Trust Display',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimary,
+        ),
+        shape: const Border(
           bottom: BorderSide(color: AppColors.border, width: 1),
         ),
       ),

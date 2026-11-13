@@ -217,20 +217,18 @@ class _AccessGateScreenState extends State<AccessGateScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Icon(
-                  Icons.menu_book_rounded,
-                  size: 64,
-                  color: AppColors.primary,
+                Center(
+                  child: Image.asset(
+                    'assets/images/logo.png',
+                    height: 88,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'LivCipes',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textPrimary,
-                  ),
+                  style: Theme.of(context).textTheme.displayMedium,
                 ),
                 const SizedBox(height: 8),
                 const Text(

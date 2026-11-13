@@ -34,6 +34,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
 
   bool _ovenRequired = false;
   bool _isRestricted = false;
+  bool _isApproved = false;
   bool _isSaving = false;
 
   bool get _isEditing => widget.recipeToEdit != null;
@@ -55,6 +56,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
       text: r?.ovenTemperature != null ? r!.ovenTemperature.toString() : '',
     );
     _isRestricted = r?.isRestricted ?? false;
+    _isApproved = r?.isApproved ?? false;
 
     if (r != null) {
       _selectedUtensilIds.addAll(r.requiredUtensils);
@@ -172,6 +174,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
         ingredients: ingredients,
         stepGroups: stepGroups,
         isRestricted: _isRestricted,
+        isApproved: _isApproved,
         createdAt: widget.recipeToEdit?.createdAt ?? DateTime.now(),
       );
 
@@ -359,6 +362,33 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                 value: _isRestricted,
                 activeThumbColor: AppColors.primary,
                 onChanged: (val) => setState(() => _isRestricted = val),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              decoration: BoxDecoration(
+                color: _isApproved ? const Color(0xFFE8F3EE) : AppColors.surface,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: _isApproved ? const Color(0xFFB7D9C9) : AppColors.border,
+                ),
+              ),
+              child: SwitchListTile(
+                title: const Text(
+                  'Receita Testada e Aprovada',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                subtitle: const Text(
+                  'Exibe o selo editorial indicando que você já preparou e aprovou',
+                  style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                ),
+                value: _isApproved,
+                activeThumbColor: const Color(0xFF2E6F56),
+                onChanged: (val) => setState(() => _isApproved = val),
               ),
             ),
             const SizedBox(height: 24),

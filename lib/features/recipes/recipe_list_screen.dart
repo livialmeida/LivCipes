@@ -412,9 +412,9 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
+        title: Text(
           'LivCipes',
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: Theme.of(context).textTheme.displayMedium,
         ),
           leading: widget.hasReturnRef
               ? IconButton(
@@ -455,7 +455,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           )
         ]
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: widget.accessToken.isAdmin ? FloatingActionButton(
         backgroundColor: AppColors.primary,
         foregroundColor: Colors.white,
         onPressed: () {
@@ -467,7 +467,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           );
         },
         child: const Icon(Icons.add),
-      ),
+      ) : null,
       body: StreamBuilder<List<Recipe>>(
         stream: _recipeService.getRecipesStream(),
         builder: (context, snapshot) {
