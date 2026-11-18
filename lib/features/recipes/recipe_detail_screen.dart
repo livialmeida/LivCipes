@@ -33,13 +33,6 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
     _currentRecipe = widget.recipe;
   }
 
-  String _formatAmount(double amount) {
-    if (amount == amount.roundToDouble()) {
-      return amount.toInt().toString();
-    }
-    return amount.toString();
-  }
-
   // Confirms and deletes the recipe document from Firestore
   Future<void> _confirmAndDeleteRecipe() async {
     final confirmed = await showDialog<bool>(
@@ -195,8 +188,10 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -213,50 +208,45 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                     ),
                   ),
                 ),
-                Wrap(
-                  spacing: 12,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.timer_outlined, size: 16, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${_currentRecipe.prepTimeMinutes} min',
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.pie_chart_outline, size: 16, color: AppColors.textSecondary),
-                        const SizedBox(width: 4),
-                        Text(
-                          _currentRecipe.yieldPortions,
-                          style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                        ),
-                      ],
-                    ),
-                    if (_currentRecipe.ovenRequired && _currentRecipe.ovenTemperature != null)
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.thermostat_outlined, size: 16, color: AppColors.primary),
-                          const SizedBox(width: 2),
-                          Text(
-                            '${_currentRecipe.ovenTemperature}°C',
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
+                if (_currentRecipe.prepTimeMinutes > 0)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.timer_outlined, size: 16, color: AppColors.textSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        '${_currentRecipe.prepTimeMinutes} min',
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
                       ),
+                    ],
+                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.pie_chart_outline, size: 16, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(
+                      _currentRecipe.yieldPortions,
+                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                    )
                   ],
                 ),
+                if (_currentRecipe.ovenRequired && _currentRecipe.ovenTemperature != null)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.thermostat_outlined, size: 16, color: AppColors.primary),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${_currentRecipe.ovenTemperature}ºC',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.primary,
+                        ),
+                      )
+                    ],
+                  )
               ],
             ),
             if (_currentRecipe.description != null &&
@@ -334,22 +324,24 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                 separatorBuilder: (context, index) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final ingredient = _currentRecipe.ingredients[index];
-                  final formattedAmount = _formatAmount(ingredient.amount);
+                  final quantityLabel = '${ingredient.amount} ${ingredient.unit}'.trim();
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          '$formattedAmount ${ingredient.unit}'.trim(),
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: AppColors.primary,
+                        if (quantityLabel.isNotEmpty) ...[
+                          Text(
+                            quantityLabel,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
+                          const SizedBox(width: 12),
+                        ],
                         Expanded(
                           child: Text(
                             ingredient.name,

@@ -62,12 +62,9 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
       _selectedUtensilIds.addAll(r.requiredUtensils);
 
       for (final ing in r.ingredients) {
-        final amountStr = ing.amount == ing.amount.roundToDouble()
-            ? ing.amount.toInt().toString()
-            : ing.amount.toString();
         _ingredientRows.add(_IngredientRow(
           name: ing.name,
-          amount: amountStr,
+          amount: ing.amount,
           unit: ing.unit,
         ));
       }
@@ -133,10 +130,9 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
 
     try {
       final ingredients = _ingredientRows.map((row) {
-        final rawAmount = row.amountController.text.replaceAll(',', '.').trim();
         return Ingredient(
           name: row.nameController.text.trim(),
-          amount: double.tryParse(rawAmount) ?? 0.0,
+          amount: row.amountController.text.trim(),
           unit: row.unitController.text.trim(),
         );
       }).toList();
@@ -254,8 +250,6 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                       labelText: 'Tempo (minutos)',
                       hintText: 'Ex: 45',
                     ),
-                    validator: (v) =>
-                    v == null || v.trim().isEmpty ? 'Informe o tempo' : null,
                   ),
                 ),
               ],
@@ -479,11 +473,10 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                       flex: 2,
                       child: TextFormField(
                         controller: row.amountController,
-                        keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
-                        decoration: const InputDecoration(hintText: 'Qtd'),
-                        validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Qtd' : null,
+                        keyboardType: TextInputType.text,
+                        decoration: const InputDecoration(
+                          hintText: 'Qtd / a gosto',
+                        ),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -491,9 +484,9 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                       flex: 2,
                       child: TextFormField(
                         controller: row.unitController,
-                        decoration: const InputDecoration(hintText: 'Unidade'),
-                        validator: (v) =>
-                        v == null || v.trim().isEmpty ? 'Unid' : null,
+                        decoration: const InputDecoration(
+                          hintText: 'Unid (opc.)',
+                        ),
                       ),
                     ),
                     if (_ingredientRows.length > 1)

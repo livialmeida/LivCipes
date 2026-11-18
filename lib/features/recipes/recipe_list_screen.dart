@@ -797,13 +797,15 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  const Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${recipe.prepTimeMinutes} min',
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                  ),
-                  const SizedBox(width: 14),
+                  if (recipe.prepTimeMinutes > 0) ...[
+                    const Icon(Icons.timer_outlined, size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${recipe.prepTimeMinutes} min',
+                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                    const SizedBox(width: 14),
+                  ],
                   const Icon(Icons.pie_chart_outline, size: 14, color: AppColors.textSecondary),
                   const SizedBox(width: 4),
                   Text(

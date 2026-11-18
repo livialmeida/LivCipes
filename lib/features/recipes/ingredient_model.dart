@@ -1,12 +1,12 @@
 class Ingredient {
   final String name;
-  final double amount;
+  final String amount;
   final String unit;
 
   const Ingredient({
     required this.name,
-    required this.amount,
-    required this.unit,
+    this.amount = '',
+    this.unit = '',
 });
 
   Map<String, dynamic> toMap() {
@@ -18,9 +18,22 @@ class Ingredient {
   }
 
   factory Ingredient.fromMap(Map<String, dynamic> map) {
+    final rawAmount = map['amount'];
+    String parsedAmount = '';
+
+    if (rawAmount is num) {
+      if (rawAmount > 0) {
+        parsedAmount = rawAmount == rawAmount.roundToDouble()
+            ? rawAmount.toInt().toString()
+            : rawAmount.toString();
+      }
+    } else if (rawAmount is String) {
+      parsedAmount = rawAmount;
+    }
+
     return Ingredient(
         name: map['name'] as String? ?? '',
-        amount: (map['amount'] as num?)?.toDouble() ?? 0.0,
+        amount: parsedAmount,
         unit: map['unit'] as String? ?? '',
     );
   }
