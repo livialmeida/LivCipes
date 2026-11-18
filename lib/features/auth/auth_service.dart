@@ -40,7 +40,10 @@ class AuthService {
       }
 
       final token = AccessToken.fromFirestore(docSnap);
-      if (token.status != TokenStatus.active) {
+      final currentDeviceId = await getDeviceIdentifier();
+      
+      if (token.status != TokenStatus.active ||
+          (!token.isAdmin && !token.isDeviceRegistered(currentDeviceId))) {
         await prefs.remove(_savedTokenKey);
         return null;
       }
@@ -83,13 +86,39 @@ class AuthService {
       return token;
     }
 
-    // Standard user initial binding
-    if (token.registeredDeviceId == null || token.registeredDeviceId!.isEmpty) {
+    // Standard user existing binding verification
+    if (token.isDeviceRegistered(currentDeviceId)) {
+      if (token.status == TokenStatus.pendingReview) {
+        throw 'Dispositivo em análise por segurança.';
+      }
+
       await docRef.update({
-        'registeredDeviceId': currentDeviceId,
-        'deviceModel': kIsWeb ? 'Web Browser' : 'Mobile Device',
+        'registeredDeviceIds': FieldValue.arrayUnion([currentDeviceId]),
+        'lastAccessedAt': FieldValue.serverTimestamp(),
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_savedTokenKey, cleanKey);
+      return token;
+    }
+
+    // Standard user initial or additional binding (up to maxDevices)
+    if (token.hasAvailableSlot) {
+      if (token.status == TokenStatus.pendingReview) {
+        throw 'Dispositivo em análise por segurança.';
+      }
+
+      final String currentModel = kIsWeb ? 'Web Browser' : 'Mobile Device';
+      final bool isFirstDevice = token.registeredDeviceIds.isEmpty;
+
+      await docRef.update({
+        if (isFirstDevice) 'registeredDeviceId': currentDeviceId,
+        if (isFirstDevice) 'deviceModel': currentModel,
+        if (isFirstDevice) 'firstAccessedAt': FieldValue.serverTimestamp(),
+        'registeredDeviceIds': FieldValue.arrayUnion([currentDeviceId]),
+        'deviceModels': [...token.deviceModels, currentModel],
+        'maxDevices': token.maxDevices,
         'status': 'active',
-        'firstAccessedAt': FieldValue.serverTimestamp(),
         'lastAccessedAt': FieldValue.serverTimestamp(),
       });
 
@@ -100,20 +129,7 @@ class AuthService {
       return AccessToken.fromFirestore(updatedSnap);
     }
 
-    // Standard user existing binding verification
-    if (token.registeredDeviceId == currentDeviceId) {
-      if (token.status == TokenStatus.pendingReview) {
-        throw 'Dispositivo em análise por segurança.';
-      }
-
-      await docRef.update({'lastAccessedAt': FieldValue.serverTimestamp()});
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(_savedTokenKey, cleanKey);
-      return token;
-    }
-
-    // Standard user hardware mismatch
+    // Standard user hardware mismatch (quota exceeded)
     await docRef.update({
       'status': 'pending_review',
       'attemptedDeviceId': currentDeviceId,

@@ -108,6 +108,10 @@ class _AdminTokensScreenState extends State<AdminTokensScreen> {
     await _tokensCollection.doc(tokenId).update({
       'registeredDeviceId': null,
       'deviceModel': null,
+      'registeredDeviceIds': [],
+      'deviceModels': [],
+      'attemptedDeviceId': null,
+      'attemptedDeviceModel': null,
       'status': 'active',
     });
   }
@@ -618,15 +622,30 @@ class _AdminTokensScreenState extends State<AdminTokensScreen> {
                                   ),
                                   const SizedBox(width: 6),
                                   Expanded(
-                                    child: Text(
-                                      t.registeredDeviceId == null
-                                          ? 'Nenhum aparelho vinculado'
-                                          : 'Dispositivo: ${t.deviceModel ?? t.registeredDeviceId}',
-                                      style: const TextStyle(
-                                        fontSize: 12,
-                                        color: AppColors.textSecondary,
-                                      ),
-                                      overflow: TextOverflow.ellipsis,
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          t.registeredDeviceIds.isEmpty && t.registeredDeviceId == null
+                                              ? 'Nenhum aparelho vinculado'
+                                              : 'Dispositivos (${t.registeredDeviceIds.isEmpty ? 1 : t.registeredDeviceIds.length}/${t.maxDevices}): ${t.deviceModels.isNotEmpty ? t.deviceModels.join(", ") : (t.deviceModel ?? t.registeredDeviceId)}',
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.textSecondary,
+                                          ),
+                                        ),
+                                        if (t.attemptedDeviceModel != null || t.attemptedDeviceId != null) ...[
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            'Tentativa bloqueada: ${t.attemptedDeviceModel ?? t.attemptedDeviceId}',
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: Colors.orange,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
                                 ],
@@ -669,7 +688,7 @@ class _AdminTokensScreenState extends State<AdminTokensScreen> {
                                       elevation: 0,
                                     ),
                                   ),
-                                  if (t.registeredDeviceId != null)
+                                  if (t.registeredDeviceId != null || t.registeredDeviceIds.isNotEmpty)
                                     OutlinedButton.icon(
                                       onPressed: () => _resetDevice(t.token),
                                       icon: const Icon(Icons.phonelink_erase,

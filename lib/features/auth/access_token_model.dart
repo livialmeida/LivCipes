@@ -11,8 +11,11 @@ class AccessToken {
   final String holderName;
   final bool isAdmin;
   final TokenStatus status;
+  final int maxDevices;
   final String? registeredDeviceId;
   final String? deviceModel;
+  final List<String> registeredDeviceIds;
+  final List<String> deviceModels;
   final String? attemptedDeviceId;
   final String? attemptedDeviceModel;
   final List<String> grantedRecipeIds;
@@ -24,14 +27,23 @@ class AccessToken {
     required this.holderName,
     this.isAdmin = false,
     required this.status,
+    this.maxDevices = 3,
     this.registeredDeviceId,
     this.deviceModel,
+    this.registeredDeviceIds = const [],
+    this.deviceModels = const [],
     this.attemptedDeviceId,
     this.attemptedDeviceModel,
     this.grantedRecipeIds = const [],
     this.firstAccessedAt,
     this.lastAccessedAt,
   });
+
+  // Helper getters to check device authorization and quota
+  bool isDeviceRegistered(String deviceId) =>
+      registeredDeviceIds.contains(deviceId) || registeredDeviceId == deviceId;
+
+  bool get hasAvailableSlot => registeredDeviceIds.length < maxDevices;
 
   factory AccessToken.fromFirestore(DocumentSnapshot<dynamic> doc) {
     final rawData = doc.data();
@@ -55,14 +67,29 @@ class AccessToken {
       return false;
     }
 
-    List<String> parseGrantedIds(dynamic rawList) {
+    int parseInt(dynamic val, int fallback) {
+      if (val is int) return val;
+      if (val is num) return val.toInt();
+      if (val is String) return int.tryParse(val) ?? fallback;
+      return fallback;
+    }
+
+    List<String> parseStringList(dynamic rawList, [String? legacySingleValue]) {
+      final List<String> result = [];
       if (rawList is Iterable) {
-        return rawList
-            .where((item) => item != null)
-            .map((item) => item.toString())
-            .toList();
+        result.addAll(
+          rawList
+              .where((item) => item != null && item.toString().isNotEmpty)
+              .map((item) => item.toString()),
+        );
       }
-      return const [];
+      // Backward compatibility: migrate legacy single field into the list if not present
+      if (legacySingleValue != null &&
+          legacySingleValue.isNotEmpty &&
+          !result.contains(legacySingleValue)) {
+        result.insert(0, legacySingleValue);
+      }
+      return List.unmodifiable(result);
     }
 
     DateTime? parseDate(dynamic val) {
@@ -71,16 +98,29 @@ class AccessToken {
       return null;
     }
 
+    final String? legacyDeviceId = data['registeredDeviceId']?.toString();
+    final String? legacyDeviceModel = data['deviceModel']?.toString();
+
+    final List<String> deviceIds =
+    parseStringList(data['registeredDeviceIds'], legacyDeviceId);
+    final List<String> models =
+    parseStringList(data['deviceModels'], legacyDeviceModel);
+
     return AccessToken(
       token: doc.id,
       holderName: data['holderName']?.toString() ?? 'Sem nome',
       isAdmin: parseBool(data['isAdmin']),
       status: parseStatus(data['status']),
-      registeredDeviceId: data['registeredDeviceId']?.toString(),
-      deviceModel: data['deviceModel']?.toString(),
+      maxDevices: parseInt(data['maxDevices'], 3),
+      registeredDeviceId:
+      legacyDeviceId ?? (deviceIds.isNotEmpty ? deviceIds.first : null),
+      deviceModel:
+      legacyDeviceModel ?? (models.isNotEmpty ? models.first : null),
+      registeredDeviceIds: deviceIds,
+      deviceModels: models,
       attemptedDeviceId: data['attemptedDeviceId']?.toString(),
       attemptedDeviceModel: data['attemptedDeviceModel']?.toString(),
-      grantedRecipeIds: parseGrantedIds(data['grantedRecipeIds']),
+      grantedRecipeIds: parseStringList(data['grantedRecipeIds']),
       firstAccessedAt: parseDate(data['firstAccessedAt']),
       lastAccessedAt: parseDate(data['lastAccessedAt']),
     );
@@ -102,8 +142,13 @@ class AccessToken {
       'holderName': holderName,
       'isAdmin': isAdmin,
       'status': serializeStatus(status),
-      'registeredDeviceId': registeredDeviceId,
-      'deviceModel': deviceModel,
+      'maxDevices': maxDevices,
+      'registeredDeviceId': registeredDeviceId ??
+          (registeredDeviceIds.isNotEmpty ? registeredDeviceIds.first : null),
+      'deviceModel':
+      deviceModel ?? (deviceModels.isNotEmpty ? deviceModels.first : null),
+      'registeredDeviceIds': registeredDeviceIds,
+      'deviceModels': deviceModels,
       'attemptedDeviceId': attemptedDeviceId,
       'attemptedDeviceModel': attemptedDeviceModel,
       'grantedRecipeIds': grantedRecipeIds,
