@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:web/web.dart' as web;
 import '../../core/app_theme.dart';
 import 'recipe_model.dart';
 import 'recipe_service.dart';
 import 'recipe_detail_screen.dart';
+import 'special_category.dart';
 import 'utensil.dart';
 import 'recipe_form_screen.dart';
 import '../auth/access_token_model.dart';
@@ -167,9 +169,17 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                           itemCount: categories.length,
                           itemBuilder: (context, index) {
                             final category = categories[index];
+                            final special = SpecialCategory.fromName(category);
                             final isChecked = _selectedCategories.contains(category);
 
                             return CheckboxListTile(
+                              secondary: special != null
+                                ? SvgPicture.asset(
+                                  special.assetPath,
+                                  width: 22,
+                                  height: 22,
+                                  )
+                                : null,
                               title: Text(category),
                               value: isChecked,
                               activeColor: AppColors.primary,
@@ -784,13 +794,31 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
                   const SizedBox(width: 8),
 
-                  Text(
-                    recipe.category,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.primary,
-                    ),
+                  Builder(
+                    builder: (context) {
+                      final special = SpecialCategory.fromName(recipe.category);
+                      return Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (special != null) ...[
+                            SvgPicture.asset(
+                              special.assetPath,
+                              width: 14,
+                              height: 14,
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                          Text(
+                            recipe.category,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -806,12 +834,14 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
                     ),
                     const SizedBox(width: 14),
                   ],
-                  const Icon(Icons.pie_chart_outline, size: 14, color: AppColors.textSecondary),
-                  const SizedBox(width: 4),
-                  Text(
-                    recipe.yieldPortions,
-                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
-                  ),
+                  if (recipe.yieldPortions.trim().isNotEmpty) ...[
+                    const Icon(Icons.pie_chart_outline, size: 14, color: AppColors.textSecondary),
+                    const SizedBox(width: 4),
+                    Text(
+                      recipe.yieldPortions,
+                      style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    ),
+                  ],
                 ],
               ),
               if (recipe.requiredUtensils.isNotEmpty) ...[

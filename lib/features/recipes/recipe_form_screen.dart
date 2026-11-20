@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/app_theme.dart';
 import 'ingredient_model.dart';
 import 'recipe_model.dart';
 import 'recipe_service.dart';
+import 'special_category.dart';
 import 'utensil.dart';
 
 class RecipeFormScreen extends StatefulWidget {
@@ -233,6 +235,7 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                 Expanded(
                   child: TextFormField(
                     controller: _categoryController,
+                    onChanged: (_) => setState(() {}),
                     decoration: const InputDecoration(
                       labelText: 'Categoria',
                       hintText: 'Ex: Confeitaria, Massas',
@@ -253,6 +256,39 @@ class _RecipeFormScreenState extends State<RecipeFormScreen> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 6,
+              children: SpecialCategory.values.map((special) {
+                final isSelected =
+                    _categoryController.text.trim().toLowerCase() ==
+                      special.name.toLowerCase();
+                return ChoiceChip(
+                  avatar: SvgPicture.asset(
+                    special.assetPath,
+                    width: 16,
+                    height: 16,
+                  ),
+                  label: Text(special.name),
+                  selected: isSelected,
+                  selectedColor: AppColors.primaryTint,
+                  labelStyle: TextStyle(
+                    fontSize: 12,
+                    color: isSelected ? AppColors.primary : AppColors.textSecondary,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  ),
+                  side: BorderSide(
+                    color: isSelected ? AppColors.primary : AppColors.border,
+                  ),
+                  onSelected: (_) {
+                    setState(() {
+                      _categoryController.text = special.name;
+                    });
+                  },
+                );
+              }).toList(),
             ),
             const SizedBox(height: 12),
             TextFormField(

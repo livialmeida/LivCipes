@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../../core/app_theme.dart';
 import '../auth/access_token_model.dart';
 import 'recipe_form_screen.dart';
 import 'recipe_model.dart';
 import 'recipe_service.dart';
+import 'special_category.dart';
 import 'utensil.dart';
 
 class RecipeDetailScreen extends StatefulWidget {
@@ -193,20 +195,42 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
               runSpacing: 8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryTint,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    _currentRecipe.category,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.primary,
-                    ),
-                  ),
+                Builder(
+                  builder: (context) {
+                    final special =
+                    SpecialCategory.fromName(_currentRecipe.category);
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryTint,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (special != null) ...[
+                            SvgPicture.asset(
+                              special.assetPath,
+                              width: 14,
+                              height: 14,
+                            ),
+                            const SizedBox(width: 5),
+                          ],
+                          Text(
+                            _currentRecipe.category,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
                 ),
                 if (_currentRecipe.prepTimeMinutes > 0)
                   Row(
@@ -220,17 +244,18 @@ class _RecipeDetailScreenState extends State<RecipeDetailScreen> {
                       ),
                     ],
                   ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.pie_chart_outline, size: 16, color: AppColors.textSecondary),
-                    const SizedBox(width: 4),
-                    Text(
-                      _currentRecipe.yieldPortions,
-                      style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
-                    )
-                  ],
-                ),
+                if (_currentRecipe.yieldPortions.trim().isNotEmpty)
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.pie_chart_outline, size: 16, color: AppColors.textSecondary),
+                      const SizedBox(width: 4),
+                      Text(
+                        _currentRecipe.yieldPortions,
+                        style: const TextStyle(fontSize: 13, color: AppColors.textSecondary),
+                      ),
+                    ],
+                  ),
                 if (_currentRecipe.ovenRequired && _currentRecipe.ovenTemperature != null)
                   Row(
                     mainAxisSize: MainAxisSize.min,
